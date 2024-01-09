@@ -10,8 +10,8 @@ import torchvision.datasets as datasets
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 learning_rate = 0.001
-batch_size = 16
-epochs = 10
+batch_size = 32
+epochs = 30
 
 transform_train = transforms.Compose([
     # 随机水平翻转
@@ -85,7 +85,7 @@ for epoch in range(epochs):
 middle = time.time()
 print('模型训练时间：{:.1f}秒'.format(middle - start))
 
-torch.save(net, 'net.pth')
+torch.save(net, 'net2.pth')
 net.eval()
 correct = 0
 with torch.no_grad():
