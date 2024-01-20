@@ -2,6 +2,7 @@ import random
 import time
 from queue import Queue
 
+import numpy as np
 from matplotlib import pyplot as plt
 
 
@@ -20,13 +21,13 @@ class Node:
 
 def caculCost(node, isDijkstra=False):
     if isDijkstra:
-        return node.g
+        return node.h
     return node.g + node.h
 
 
 def caculDistance(node1, node2):
-    cost = ((node2.x - node1.x) ** 2 + (node2.y - node1.x) ** 2) ** 0.5
-    # cost = ((node2.x - node1.x) + (node2.y - node1.x))
+    # cost = ((node2.x - node1.x) ** 2 + (node2.y - node1.x) ** 2) ** 0.5
+    cost = (abs(node2.x - node1.x) + abs(node2.y - node1.y))
     return cost
 
 
@@ -42,11 +43,11 @@ def findNeighbor(node, pathMap):
 def Astar(pathMap, start, goal):
     begin = Node(start[0], start[1], pathMap[start[0]][start[1]] == 1)
     end = Node(goal[0], goal[1], pathMap[goal[0]][goal[1]] == 1)
-    openList = Queue()
+    openList = []
     closeList = []
-    openList.put(begin)
-    while not openList.empty():
-        node = openList.get()
+    openList.append(begin)
+    while openList:
+        node = openList.pop(0)
         if node == end:
             path = []
             node = node.parent
@@ -61,23 +62,25 @@ def Astar(pathMap, start, goal):
             if neighbor in closeList:
                 continue
             if not neighbor.isHinder:
-                if neighbor not in openList.queue:
+                if neighbor not in openList:
                     neighbor.parent = node
                     neighbor.g = node.g + 1
                     neighbor.h = caculDistance(neighbor, end)
-                    pathMap[neighbor.x][neighbor.y] = int(neighbor.g + neighbor.h)
-                    openList.put(neighbor)
+                    pathMap[neighbor.x][neighbor.y] = int(neighbor.g + neighbor.h)*2
+                    openList.append(neighbor)
                 else:
                     if node.g + 1 < neighbor.g:
                         neighbor.parent = node
                         neighbor.g = node.g + 1
-        sorted(openList.queue, key=caculCost, reverse=False)
+        openList = sorted(openList, key=caculCost, reverse=False)
     return None
 
 
 def plot_astar(grid, start, goal, path):
-    plt.imshow(grid, cmap='viridis', origin='upper')
+    norm = plt.Normalize(np.min(grid), np.max(grid))
+    plt.imshow(grid, cmap='viridis', origin='upper', norm=norm, interpolation=None)
     # plt.imshow([[1 if cell == 1 else 0 for cell in row] for row in grid], cmap='Greys', origin='upper')
+    plt.imshow(np.ma.masked_where(grid == 255, grid), cmap='Reds', norm=norm, origin='upper', interpolation='none')
 
     # 绘制起点和终点
     plt.plot(start[1], start[0], 'ro', label='Start')  # 红色点表示起点
@@ -94,8 +97,30 @@ def plot_astar(grid, start, goal, path):
 
 if __name__ == '__main__':
     Map = [[0 if random.random() < 0.7 else 255 for _ in range(20)] for _ in range(20)]
+    Map = [[255, 255, 255, 0, 255, 0, 0, 0, 0, 0, 255, 0, 0, 255, 0, 0, 0, 0, 0, 255],
+           [0, 255, 255, 255, 255, 255, 0, 0, 0, 0, 255, 0, 0, 255, 255, 0, 0, 255, 0, 0],
+           [0, 255, 0, 255, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0],
+           [255, 0, 0, 255, 255, 0, 0, 0, 0, 255, 0, 0, 255, 0, 0, 255, 0, 255, 0, 0],
+           [0, 0, 255, 0, 255, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255],
+           [255, 255, 255, 0, 0, 0, 255, 0, 255, 0, 0, 255, 0, 255, 255, 0, 0, 0, 255, 0],
+           [0, 0, 0, 255, 255, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 255, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 0, 0, 0],
+           [255, 0, 0, 255, 0, 0, 0, 0, 255, 0, 0, 0, 0, 255, 0, 255, 0, 0, 0, 255],
+           [0, 0, 0, 0, 255, 255, 255, 0, 0, 0, 255, 255, 0, 0, 0, 255, 0, 255, 0, 0],
+           [255, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 255, 0, 0, 0, 0],
+           [0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 255, 255, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 0, 0, 0, 0, 255],
+           [0, 255, 0, 0, 255, 0, 255, 0, 0, 0, 0, 255, 0, 0, 255, 0, 0, 255, 0, 0],
+           [0, 0, 0, 0, 0, 0, 255, 0, 255, 0, 0, 255, 255, 0, 255, 0, 255, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 255, 0, 255, 0, 0],
+           [255, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0],
+           [0, 255, 255, 255, 0, 0, 255, 255, 0, 255, 0, 0, 0, 255, 0, 0, 255, 0, 0, 0],
+           [255, 0, 255, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 0, 0, 0, 0, 0],
+           [0, 255, 0, 0, 255, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255]]
     start = [int(random.random() * (len(Map) - 1)), int(random.random() * (len(Map[0]) - 1))]
     goal = [int(random.random() * (len(Map) - 1)), int(random.random() * (len(Map[0]) - 1))]
+    start = [16, 5]
+    goal = [2, 15]
     Map[start[0]][start[1]] = 0
     Map[goal[0]][goal[1]] = 0
     Aans = Astar(Map, start, goal)
