@@ -70,27 +70,27 @@ class Net(nn.Module):  # 双层卷积+三层全连接
 
 
 start = time.time()
-# net = Net().to(device)
-net=torch.load('net2.pth')
-# optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
-# for epoch in range(epochs):
-#     net.train()
-#     loss_val = []
-#     for i, (x, y) in enumerate(train_loader):
-#         x, y = x.to(device), y.to(device)
-#         pre_y = net(x)
-#         loss = nn.CrossEntropyLoss()(pre_y, y)
-#         optimizer.zero_grad()
-#         loss.backward()
-#         optimizer.step()
-#         loss_val.append(loss.item())
-#         if i % 30 == 0:
-#             print(r'训练的代数：{} [当前代完成进度：{} / {} ({:.0f}%)]，当前损失函数值: {:.6f}'.
-#                   format(epoch, i * len(x), len(train_loader.dataset), 100. * i / len(train_loader), np.mean(loss_val)))
+net = Net().to(device)
+# net=torch.load('net2.pth')
+optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
+for epoch in range(epochs):
+    net.train()
+    loss_val = []
+    for i, (x, y) in enumerate(train_loader):
+        x, y = x.to(device), y.to(device)
+        pre_y = net(x)
+        loss = nn.CrossEntropyLoss()(pre_y, y)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        loss_val.append(loss.item())
+        if i % 30 == 0:
+            print(r'训练的代数：{} [当前代完成进度：{} / {} ({:.0f}%)]，当前损失函数值: {:.6f}'.
+                  format(epoch, i * len(x), len(train_loader.dataset), 100. * i / len(train_loader), np.mean(loss_val)))
 middle = time.time()
-# print('模型训练时间：{:.1f}秒'.format(middle - start))
-#
-# torch.save(net, 'net2.pth')
+print('模型训练时间：{:.1f}秒'.format(middle - start))
+
+torch.save(net, 'net2.pth')
 # 准确度分析
 correct = 0
 total = 0
